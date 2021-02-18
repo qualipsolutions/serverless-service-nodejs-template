@@ -1,0 +1,153 @@
+org: qualipsolutions
+app: fyve-app
+service: fyve-service
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  memorySize: 256
+  stage: dev
+  region: eu-west-1
+  apiName: ${opt:stage, self:provider.stage, 'dev'}
+  # apiGateway:
+  #   shouldStartNameWithService: true
+  environment: ${file(config/${self:provider.stage}.yml):environment}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: s3:*
+          Resource: arn:aws:s3:::${self:custom.UploadBucket.name}/*
+
+functions:
+  # =================================================================
+  # Authorizer handlers
+  # =================================================================
+  auth:
+    handler: src/handlers/auth/auth.handler
+
+  # =================================================================
+  # API Gateway - Testing handlers
+  # =================================================================
+  clearDbCollections:
+    handler: src/handlers/testing/clearDbCollections.handler
+    events:
+      - http:
+          method: POST
+          path: /testing/clearDbCollections
+          cors: true
+
+  # =================================================================
+  # API Gateway - Auth handlers
+  # =================================================================
+  signUp:
+    handler: src/handlers/auth/signUp.handler
+    events:
+      - http:
+          method: POST
+          path: /auth/signUp
+          cors: true
+
+  memberSignUp:
+    handler: src/handlers/auth/memberSignUp.handler
+    events:
+      - http:
+          method: POST
+          path: /auth/memberSignUp
+          cors: true
+          authorizer:
+            name: auth
+            resultTtlInSeconds: 0
+
+  login:
+    handler: src/handlers/auth/login.handler
+    events:
+      - http:
+          method: POST
+          path: /auth/login
+          cors: true
+
+  logout:
+    handler: src/handlers/auth/logout.handler
+    events:
+      - http:
+          method: POST
+          path: /auth/logout
+          cors: true
+          authorizer:
+            name: auth
+            resultTtlInSeconds: 0
+
+  getMe:
+    handler: src/handlers/auth/getMe.handler
+    events:
+      - http:
+          method: GET
+          path: /auth/me
+          cors: true
+          authorizer:
+            name: auth
+            resultTtlInSeconds: 0
+
+  patchMe:
+    handler: src/handlers/auth/patchMe.handler
+    events:
+      - http:
+          method: PATCH
+          path: /auth/me
+          cors: true
+          authorizer:
+            name: auth
+            resultTtlInSeconds: 0
+
+  deleteMe:
+    handler: src/handlers/auth/deleteMe.handler
+    events:
+      - http:
+          method: DELETE
+          path: /auth/me
+          cors: true
+          authorizer:
+            name: auth
+            resultTtlInSeconds: 0
+
+  getS3SignedUrl:
+    handler: src/handlers/s3/getS3SignedUrl.handler
+    events:
+      - http:
+          method: POST
+          path: /s3/signedUrl
+          cors: true
+          authorizer:
+            name: auth
+            resultTtlInSeconds: 0
+  # =================================================================
+  # S3 event handlers
+  # =================================================================
+  putUploadEvent:
+    handler: src/handlers/s3/putUploadEvent.handler
+    events:
+      - s3:
+          bucket: ${self:custom.UploadBucket.name}
+          event: s3:ObjectCreated:*
+          existing: true
+
+  # // snapdev::paste::{"marker":"crud-handlers"}
+
+resources:
+  Resources:
+    UploadBucket: ${file(resources/UploadBucket.yml):UploadBucket}
+    UploadBucketPolicy: ${file(resources/UploadBucket.yml):UploadBucketPolicy}
+
+custom:
+  bundle:
+    sourcemaps: false
+  UploadBucket:
+    name: co.za.fyve.uploads.${self:provider.stage}

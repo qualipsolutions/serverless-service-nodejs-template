@@ -1,0 +1,14 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# Webpack directories
+.webpack
+dev.env
+env/
+.DS_Store
+snapdev
+src/tests/fixtures/.env

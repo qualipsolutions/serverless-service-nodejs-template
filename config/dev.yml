@@ -1,0 +1,17 @@
+environment:
+  STAGE: ${self:provider.stage}
+  DB_URL: xxx
+  PASSWORD_SECRET: xxx
+  USERNAME_REGEX: ^[a-z][a-z0-9-_]*$
+  # SMTP
+  SMTP_ADMIN_EMAIL: xxx
+  SMTP_FROM: xxx
+  SMTP_HOST: xxx
+  SMTP_PORT: xxx
+  SMTP_SECURE: xxx
+  SMTP_AUTH_USER: xxx
+  SMTP_AUTH_PASS: xxx
+  #AWS
+  REGION: eu-west-1
+  #S3
+  UPLOAD_BUCKET_NAME: ${self:custom.UploadBucket.name}

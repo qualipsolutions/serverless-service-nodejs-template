@@ -1,0 +1,22 @@
+UploadBucket:
+  Type: AWS::S3::Bucket
+  DeletionPolicy: Retain
+  Properties:
+    BucketName: ${self:custom.UploadBucket.name}
+    AccessControl: Private
+    CorsConfiguration:
+      CorsRules:
+        - AllowedHeaders: ["*"]
+          AllowedMethods: ["PUT"]
+          AllowedOrigins: ["*"]
+
+UploadBucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+    Bucket: !Ref UploadBucket
+    PolicyDocument:
+      Statement:
+        - Effect: Allow
+          Principal: "*"
+          Action: s3:*
+          Resource: arn:aws:s3:::${self:custom.UploadBucket.name}/*
