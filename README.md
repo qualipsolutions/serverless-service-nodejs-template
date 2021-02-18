@@ -1,1 +1,1 @@
-# Fyve Service
+# Serverless Framework NodeJS Template
